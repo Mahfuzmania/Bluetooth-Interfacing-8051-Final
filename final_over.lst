@@ -1,0 +1,655 @@
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 1
+
+
+
+
+
+       MCS-51 Family Macro Assembler   A S E M - 5 1   V 1.3
+       =====================================================
+
+
+
+	Source File:	E:\Microcontroller\final\final_over.asm
+	Object File:	E:\Microcontroller\final\final_over.hex
+	List File:	E:\Microcontroller\final\final_over.lst
+
+
+
+ Line  I  Addr  Code            Source
+
+    1:		N      0000	ORG 00H
+    2:	  0000	C2 A5		CLR P2.5 ; LED connected
+    3:	  0002	D2 A4		SETB P2.4 ; as buzzer connected
+    4:
+    5:				; for Bluetooth module
+    6:	  0004	75 89 20	MOV TMOD,#20H ; timer 1 mode 2 is selected
+    7:	  0007	75 8D FD	MOV TH1,#0FDH ; baud rate
+    8:	  000A	75 98 50	MOV SCON,#50H ; serial mode 1 10 bit total isn, 8db, 1STOPb
+    9:	  000D	C2 99		CLR TI ; making TI reg zero
+   10:	  000F	D2 8E		SETB TR1 ; starting timer 1
+   11:
+   12:	  0011			CONT1:
+   13:	  0011			GOBACK:
+   14:	  0011			CONT_RE:
+   15:	  0011			CONT_M:
+   16:	  0011			CONT_PRE:
+   17:	  0011	C2 98		CLR RI ; register involved in receiving data from bluetooth and ensuring it
+   18:	  0013	30 98 FD	REP: JNB RI, REP
+   19:
+   20:				; preparing LCD
+   21:	  0016	74 38		MOV A,#38H ; creatiing 2 lines and 5*7 matrix
+   22:	  0018	51 08		ACALL COMNWRT
+   23:	  001A	51 31		ACALL DELAY
+   24:	  001C	74 0E		MOV A,#0EH ; display on, cursor blinking
+   25:	  001E	51 08		ACALL COMNWRT
+   26:	  0020	51 31		ACALL DELAY
+   27:	  0022	74 01		MOV A,#01H ; clear display skin
+   28:	  0024	51 08		ACALL COMNWRT
+   29:	  0026	51 31		ACALL DELAY
+   30:	  0028	74 06		MOV A,#06H ; cursor shift right
+   31:	  002A	51 08		ACALL COMNWRT
+   32:	  002C	51 31		ACALL DELAY
+   33:	  002E	74 0C		MOV A,#0CH ; display on, cursor off
+   34:	  0030	51 08		ACALL COMNWRT
+   35:	  0032	51 31		ACALL DELAY
+   36:
+   37:				; writing the data from bluetooth
+   38:
+   39:	  0034	E5 99		MOV A,SBUF  ; data from bluetooth stored in SBUF
+   40:	  0036	51 15		ACALL DATAWRT  ; takes data from app and prints it in LCD
+   41:	  0038	51 31		ACALL DELAY
+   42:
+   43:	  003A	B4 58 0F	CJNE A,#'X',CHECKN_PRE
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 2
+
+
+
+ Line  I  Addr  Code            Source
+
+   44:	  003D	C2 98		CLR RI
+   45:	  003F			GO_PRE:
+   46:	  003F	C2 98		CLR RI
+   47:	  0041	75 A0 00	MOV P2,#00000000B
+   48:	  0044	75 90 00	MOV P1,#00000000B
+   49:	  0047	30 98 FD	REP14: JNB RI,REP14
+   50:	  004A	80 03		SJMP GO15
+   51:	  004C	02 00 CE	CHECKN_PRE: LJMP CHECKNEXT_PRE
+   52:	  004F			GO15:
+   53:	  004F	E5 99		MOV A,SBUF
+   54:	  0051	B4 30 09	CJNE A,#'0',JA_PRE
+   55:	  0054	75 A0 FF	MOV P2,#11111111B
+   56:	  0057	75 90 FF	MOV P1,#11111111B
+   57:	  005A	02 00 11	LJMP CONT_PRE
+   58:	  005D			JA_PRE:
+   59:
+   60:	  005D	B4 41 3C	CJNE A,#'A',LED_B
+   61:	  0060	79 01			MOV R1,#1
+   62:	  0062	7A 02			LED_LOOP2: MOV R2,#2
+   63:	  0064	7B FF			LED_LOOP1: MOV R3,#255
+   64:	  0066				LED_LOOP:
+   65:	  0066	C2 98			CLR RI
+   66:	  0068	75 90 7E		MOV P1,#01111110B
+   67:	  006B	75 A0 FE	      	MOV P2,#11111110B
+   68:	  006E	51 77		      	ACALL DELAY_LED
+   69:	  0070	75 90 88	      	MOV P1,#10001000B
+   70:	  0073	75 A0 FD	      	MOV P2,#11111101B
+   71:	  0076	51 77		      	ACALL DELAY_LED
+   72:	  0078	75 90 88	      	MOV P1,#10001000B
+   73:	  007B	75 A0 FB	      	MOV P2,#11111011B
+   74:	  007E	51 77		      	ACALL DELAY_LED
+   75:	  0080	75 90 88	      	MOV P1,#10001000B
+   76:	  0083	75 A0 F7	      	MOV P2,#11110111B
+   77:	  0086	51 77		      	ACALL DELAY_LED
+   78:	  0088	75 90 7E	      	MOV P1,#01111110B
+   79:	  008B	75 A0 EF	      	MOV P2,#11101111B
+   80:	  008E	51 77		      	ACALL DELAY_LED
+   81:	  0090	DB D4			DJNZ R3,LED_LOOP
+   82:	  0092	DA D0			DJNZ R2,LED_LOOP1
+   83:	  0094	D9 CC			DJNZ R1,LED_LOOP2
+   84:
+   85:	  0096	02 00 3F		LJMP GO_PRE
+   86:	  0099	02 00 3F	LJMP GO_PRE
+   87:
+   88:	  009C			LED_B:
+   89:	  009C	B4 42 A0	CJNE A,#'B',GO_PRE
+   90:	  009F	79 01			MOV R1,#1
+   91:	  00A1	7A 03			LED_LOOPB2: MOV R2,#3
+   92:	  00A3	7B FF			LED_LOOPB1: MOV R3,#255
+   93:	  00A5				LED_LOOPB:
+   94:	  00A5	75 90 FF		MOV P1,#11111111B
+   95:	  00A8	75 A0 FE	      	MOV P2,#11111110B
+   96:	  00AB	51 77		      	ACALL DELAY_LED
+   97:	  00AD	75 90 89	      	MOV P1,#10001001B
+   98:	  00B0	75 A0 FD	      	MOV P2,#11111101B
+   99:	  00B3	51 77		      	ACALL DELAY_LED
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 3
+
+
+
+ Line  I  Addr  Code            Source
+
+  100:	  00B5	75 90 89	      	MOV P1,#10001001B
+  101:	  00B8	75 A0 FB	      	MOV P2,#11111011B
+  102:	  00BB	51 77		      	ACALL DELAY_LED
+  103:	  00BD	75 90 66	      	MOV P1,#01100110B
+  104:	  00C0	75 A0 F7	      	MOV P2,#11110111B
+  105:	  00C3	51 77		      	ACALL DELAY_LED
+  106:	  00C5	DB DE			DJNZ R3,LED_LOOPB
+  107:	  00C7	DA DA			DJNZ R2,LED_LOOPB1
+  108:	  00C9	D9 D6			DJNZ R1,LED_LOOPB2
+  109:
+  110:	  00CB	02 00 3F		LJMP GO_PRE
+  111:
+  112:
+  113:	  00CE			CHECKNEXT_PRE:
+  114:	  00CE	B4 79 02	CJNE A,#'y',CHEKK
+  115:	  00D1	C2 B5		CLR P3.5
+  116:
+  117:
+  118:	  00D3			CHEKK:
+  119:	  00D3	B4 6E 02	CJNE A,#'n',CHEKK1
+  120:	  00D6	D2 B5		SETB P3.5
+  121:
+  122:	  00D8			CHEKK1:
+  123:	  00D8	B4 6C 02	CJNE A,#'l', CHECKNEXT
+  124:	  00DB	D2 B6		SETB P3.6
+  125:
+  126:	  00DD			CHECKNEXT:
+  127:	  00DD	B4 4C 02	CJNE A,#'L', CHECKNEXT1
+  128:	  00E0	C2 B6		CLR P3.6
+  129:				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  130:	  00E2			CHECKNEXT1:
+  131:	  00E2	B4 31 07	CJNE A,#'1', CHECKN_RE
+  132:	  00E5	C2 98		CLR RI
+  133:	  00E7			GO_RE:
+  134:	  00E7	30 98 FD	REP3: JNB RI,REP3
+  135:	  00EA	80 03		SJMP GO4
+  136:	  00EC	02 01 0D	CHECKN_RE: LJMP CHECKNEXT_RE
+  137:	  00EF			GO4:
+  138:
+  139:	  00EF	E5 99		MOV A,SBUF
+  140:	  00F1	B4 30 03	CJNE A,#'0',JA_RE
+  141:	  00F4	02 00 11	LJMP CONT_RE
+  142:	  00F7			JA_RE:
+  143:	  00F7	55 0F		ANL A, 0FH
+  144:	  00F9	FA		MOV R2,A
+  145:	  00FA			RE_LOOP:
+  146:	  00FA	C2 B6		CLR P3.6
+  147:	  00FC	51 61		ACALL DELAY_RE
+  148:	  00FE	51 61		ACALL DELAY_RE
+  149:	  0100	D2 B6		SETB P3.6
+  150:	  0102	51 61		ACALL DELAY_RE
+  151:	  0104	51 61		ACALL DELAY_RE
+  152:	  0106	DA F2		DJNZ R2, RE_LOOP
+  153:	  0108	C2 98		CLR RI
+  154:	  010A	02 00 E7	LJMP GO_RE
+  155:				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 4
+
+
+
+ Line  I  Addr  Code            Source
+
+  156:	  010D			CHECKNEXT_RE:
+  157:	  010D	B4 4D 09	CJNE A,#'M', CHECKN_M
+  158:	  0110	C2 98		CLR RI
+  159:
+  160:	  0112			GO_M:
+  161:	  0112	C2 98		CLR RI
+  162:	  0114	30 98 FD	REP4: JNB RI,REP4
+  163:	  0117	80 03		SJMP GO5
+  164:	  0119	02 01 72	CHECKN_M: LJMP CHECKNEXT_M
+  165:	  011C			GO5:
+  166:
+  167:	  011C	E5 99		MOV A,SBUF
+  168:	  011E	B4 30 03	CJNE A,#'0',JA_M
+  169:	  0121	02 00 11	LJMP CONT_M
+  170:	  0124			JA_M:
+  171:
+  172:	  0124	B4 41 1F	CJNE A,#'A',M_B
+  173:	  0127	C2 B5		CLR P3.5
+  174:	  0129	C2 B6		CLR P3.6
+  175:	  012B	51 3A		ACALL DOT
+  176:	  012D	D2 B5		SETB P3.5
+  177:	  012F	D2 B6		SETB P3.6
+  178:	  0131	51 61		ACALL DELAY_RE
+  179:	  0133	C2 B5		CLR P3.5
+  180:	  0135	C2 B6		CLR P3.6
+  181:	  0137	51 47		ACALL DASH
+  182:	  0139	51 47		ACALL DASH
+  183:	  013B	D2 B5		SETB P3.5
+  184:	  013D	D2 B6		SETB P3.6
+  185:	  013F	51 31		ACALL DELAY
+  186:	  0141	C2 98		CLR RI
+  187:	  0143	02 01 12	LJMP GO_M
+  188:
+  189:	  0146			M_B:
+  190:	  0146	B4 42 C9	CJNE A,#'B',GO_M
+  191:	  0149	C2 B5		CLR P3.5
+  192:	  014B	C2 B6		CLR P3.6
+  193:	  014D	51 47		ACALL DASH
+  194:	  014F	D2 B5		SETB P3.5
+  195:	  0151	D2 B6		SETB P3.6
+  196:	  0153	51 61		ACALL DELAY_RE
+  197:	  0155	C2 B5		CLR P3.5
+  198:	  0157	C2 B6		CLR P3.6
+  199:	  0159	51 3A		ACALL DOT
+  200:	  015B	D2 B5		SETB P3.5
+  201:	  015D	D2 B6		SETB P3.6
+  202:	  015F	51 61		ACALL DELAY_RE
+  203:	  0161	C2 B5		CLR P3.5
+  204:	  0163	C2 B6		CLR P3.6
+  205:	  0165	51 3A		ACALL DOT
+  206:	  0167	D2 B5		SETB P3.5
+  207:	  0169	D2 B6		SETB P3.6
+  208:	  016B	51 31		ACALL DELAY
+  209:	  016D	C2 98		CLR RI
+  210:	  016F	02 01 12	LJMP GO_M
+  211:
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 5
+
+
+
+ Line  I  Addr  Code            Source
+
+  212:				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  213:
+  214:	  0172			CHECKNEXT_M:
+  215:	  0172	B4 44 07	CJNE A,#'D',CHECKN2
+  216:	  0175	C2 98		CLR RI ; register involved in receiving data from bluetooth and ensuring it
+  217:	  0177	30 98 FD	REP1: JNB RI, REP1
+  218:	  017A	80 03		SJMP GO2
+  219:	  017C	02 01 C1	CHECKN2: LJMP CHECKNEXT2
+  220:	  017F			GO2:
+  221:	  017F			GOGO:
+  222:
+  223:	  017F	30 98 FD	REP2: JNB RI, REP2
+  224:				; preparing LCD
+  225:	  0182	74 38		MOV A,#38H ; creatiing 2 lines and 5*7 matrix
+  226:	  0184	51 08		ACALL COMNWRT
+  227:	  0186	51 31		ACALL DELAY
+  228:	  0188	74 0E		MOV A,#0EH ; display on, cursor blinking
+  229:	  018A	51 08		ACALL COMNWRT
+  230:	  018C	51 31		ACALL DELAY
+  231:	  018E	74 01		MOV A,#01H ; clear display skin
+  232:	  0190	51 08		ACALL COMNWRT
+  233:	  0192	51 31		ACALL DELAY
+  234:	  0194	74 06		MOV A,#06H ; cursor shift right
+  235:	  0196	51 08		ACALL COMNWRT
+  236:	  0198	51 31		ACALL DELAY
+  237:	  019A	74 0C		MOV A,#0CH ; display on, cursor off
+  238:	  019C	51 08		ACALL COMNWRT
+  239:	  019E	51 31		ACALL DELAY
+  240:
+  241:				; writing the data from bluetooth
+  242:
+  243:	  01A0	E5 99		MOV A,SBUF  ; data from bluetooth stored in SBUF
+  244:	  01A2	24 07		ADD A,#07H
+  245:	  01A4	B4 37 03	CJNE A,#'7',JAWAD
+  246:	  01A7	02 00 11	LJMP CONT1
+  247:	  01AA			JAWAD:
+  248:	  01AA	51 15		ACALL DATAWRT  ; takes data from app and prints it in LCD
+  249:	  01AC	51 31		ACALL DELAY
+  250:	  01AE	51 31		ACALL DELAY
+  251:	  01B0	51 31		ACALL DELAY
+  252:	  01B2	51 31		ACALL DELAY
+  253:	  01B4	51 31		ACALL DELAY
+  254:	  01B6	51 31		ACALL DELAY
+  255:	  01B8	51 31		ACALL DELAY
+  256:	  01BA	51 31		ACALL DELAY
+  257:
+  258:	  01BC	C2 98		CLR RI ; register involved in receiving data from bluetooth and ensuring it
+  259:
+  260:
+  261:	  01BE	02 01 7F	LJMP GOGO
+  262:
+  263:
+  264:	  01C1			CHECKNEXT2:
+  265:	  01C1	B4 43 03	CJNE A,#'C', GOBACK1
+  266:	  01C4	02 01 CA	LJMP GO3
+  267:	  01C7	02 00 11	GOBACK1: LJMP GOBACK
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 6
+
+
+
+ Line  I  Addr  Code            Source
+
+  268:
+  269:	  01CA			GO3:
+  270:	  01CA	79 09		MOV R1, #9
+  271:
+  272:	  01CC	7A 39		MOV R2, #39H
+  273:
+  274:
+  275:	  01CE			COUNT_LOOP:
+  276:	  01CE	51 31		ACALL DELAY
+  277:	  01D0	51 31		ACALL DELAY
+  278:	  01D2	51 31		ACALL DELAY
+  279:	  01D4	51 31		ACALL DELAY
+  280:	  01D6	51 31		ACALL DELAY
+  281:
+  282:	  01D8	74 38		MOV A,#38H
+  283:	  01DA	51 08		ACALL COMNWRT
+  284:	  01DC	51 31		ACALL DELAY
+  285:	  01DE	74 0E		MOV A,#0EH
+  286:	  01E0	51 08		ACALL COMNWRT
+  287:	  01E2	51 31		ACALL DELAY
+  288:	  01E4	74 01		MOV A,#01H
+  289:	  01E6	51 08		ACALL COMNWRT
+  290:	  01E8	51 31		ACALL DELAY
+  291:	  01EA	74 06		MOV A,#06H
+  292:	  01EC	51 08		ACALL COMNWRT
+  293:	  01EE	51 31		ACALL DELAY
+  294:	  01F0	74 0C		MOV A,#0CH
+  295:	  01F2	51 08		ACALL COMNWRT
+  296:	  01F4	51 31		ACALL DELAY
+  297:	  01F6	EA		MOV A,R2
+  298:	  01F7	1A		DEC R2
+  299:	  01F8	51 15		ACALL DATAWRT
+  300:	  01FA	51 31		ACALL DELAY
+  301:	  01FC	D9 D0		DJNZ R1, COUNT_LOOP
+  302:
+  303:	  01FE	C2 B5		CLR P3.5 ; Buzzer on
+  304:	  0200	51 54		ACALL DELAY1
+  305:	  0202	D2 B5		SETB P3.5 ; after a certain time, turn it off
+  306:
+  307:	  0204	11 11		ACALL GOBACK
+  308:
+  309:
+  310:
+  311:	  0206	80 FE		AGAIN: SJMP AGAIN
+  312:
+  313:
+  314:				; for reading and writing in LCD subroutine and delay subroutine
+  315:
+  316:	  0208			COMNWRT: ; for command writing
+  317:	  0208	F5 80		MOV P0,A
+  318:	  020A	C2 B2		CLR P3.2  ; RS=0
+  319:	  020C	C2 B3		CLR P3.3 ; RW=0
+  320:	  020E	D2 B4		SETB P3.4 ; EN=1
+  321:	  0210	51 31		ACALL DELAY
+  322:	  0212	C2 B4		CLR P3.4 ; EN=0 (high to low operation)
+  323:	  0214	22		RET
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 7
+
+
+
+ Line  I  Addr  Code            Source
+
+  324:
+  325:	  0215			DATAWRT: ; for data writing
+  326:	  0215	F5 80		MOV P0,A
+  327:	  0217	D2 B2		SETB P3.2 ; RS=1
+  328:	  0219	C2 B3		CLR P3.3 ; RW=0
+  329:	  021B	D2 B4		SETB P3.4 ; EN=1
+  330:	  021D	51 31		ACALL DELAY
+  331:	  021F	C2 B4		CLR P3.4 ; EN=0(high to low)
+  332:	  0221	22		RET
+  333:
+  334:	  0222			DATAENC:
+  335:	  0222	54 07		ANL A, #07H
+  336:	  0224	F5 80		MOV P0,A
+  337:	  0226	D2 B2		SETB P3.2 ; RS=1
+  338:	  0228	C2 B3		CLR P3.3 ; RW=0
+  339:	  022A	D2 B4		SETB P3.4 ; EN=1
+  340:	  022C	51 31		ACALL DELAY
+  341:	  022E	C2 B4		CLR P3.4 ; EN=0(high to low)
+  342:	  0230	22		RET
+  343:
+  344:
+  345:				; Delay subroutines
+  346:	  0231			DELAY:
+  347:	  0231	7B 32		   	MOV R3,#50
+  348:	  0233	7C FF		HERE2: MOV R4,#255
+  349:	  0235	DC FE		HERE: DJNZ R4, HERE
+  350:	  0237	DB FA		  	DJNZ R3,HERE2
+  351:	  0239	22		RET
+  352:
+  353:	  023A			DOT:
+  354:	  023A	7A 0A		   	MOV R2,#10
+  355:	  023C	7D 32		HERR_D1: MOV R5,#50
+  356:	  023E	7E FF		HERR_D2: MOV R6,#255
+  357:	  0240	DE FE		HERR_D3: DJNZ R6,HERR_D3
+  358:	  0242	DD FA		   	DJNZ R5,HERR_D2
+  359:	  0244	DA F6		   	DJNZ R2,HERR_D1
+  360:	  0246	22		RET
+  361:
+  362:	  0247			DASH:
+  363:	  0247	7A 14		   	MOV R2,#20
+  364:	  0249	7D 32		HERR_DD1: MOV R5,#50
+  365:	  024B	7E FF		HERR_DD2: MOV R6,#255
+  366:	  024D	DE FE		HERR_DD3: DJNZ R6,HERR_DD3
+  367:	  024F	DD FA		   	DJNZ R5,HERR_DD2
+  368:	  0251	DA F6		   	DJNZ R2,HERR_DD1
+  369:	  0253	22		RET
+  370:
+  371:				;for buzzer alarm
+  372:	  0254			DELAY1:
+  373:	  0254	7A 32		   	MOV R2,#50
+  374:	  0256	7D 32		HERR1: MOV R5,#50
+  375:	  0258	7E FF		HERR2: MOV R6,#255
+  376:	  025A	DE FE		HERR3: DJNZ R6,HERR3
+  377:	  025C	DD FA		   	DJNZ R5,HERR2
+  378:	  025E	DA F6		   	DJNZ R2,HERR1
+  379:	  0260	22		RET
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 8
+
+
+
+ Line  I  Addr  Code            Source
+
+  380:
+  381:
+  382:	  0261			DELAY_RE:
+  383:	  0261	7B FF		   	MOV R3,#255
+  384:	  0263	7C FF		HERRR2: MOV R4,#255
+  385:	  0265	DC FE		HERRRE: DJNZ R4, HERRRE
+  386:	  0267	DB FA		  	DJNZ R3,HERRR2
+  387:	  0269	22		RET
+  388:
+  389:	  026A			DELAY_PRE:
+  390:	  026A	7A 64		   	MOV R2,#100
+  391:	  026C	7D FF		HERR1_PRE: MOV R5,#255
+  392:	  026E	7E FF		HERR2_PRE: MOV R6,#255
+  393:	  0270	DE FE		HERR3_PRE: DJNZ R6,HERR3_PRE
+  394:	  0272	DD FA		   	DJNZ R5,HERR2_PRE
+  395:	  0274	DA F6		   	DJNZ R2,HERR1_PRE
+  396:	  0276	22		RET
+  397:
+  398:	  0277			DELAY_LED:
+  399:	  0277	7E FF				MOV 	R6,#255D     ; 1ms delay subroutine
+  400:	  0279	DE FE		HERE_LED: 	DJNZ 	R6,HERE_LED
+  401:	  027B	22		      	RET
+  402:				END
+
+
+
+
+
+                     register banks used:  ---
+
+                     no errors
+
+
+
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 9
+
+
+
+
+
+	       L I S T   O F   S Y M B O L S
+	       =============================
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+??ASEM_51			  NUMBER    8051
+??VERSION			  NUMBER    0130
+AC				  BIT	      D6
+ACC				  DATA	      E0
+AGAIN				  CODE	    0206	 311
+B				  DATA	      F0
+CHECKN2				  CODE	    017C	 219
+CHECKNEXT			  CODE	    00DD	 126
+CHECKNEXT1			  CODE	    00E2	 130
+CHECKNEXT2			  CODE	    01C1	 264
+CHECKNEXT_M			  CODE	    0172	 214
+CHECKNEXT_PRE			  CODE	    00CE	 113
+CHECKNEXT_RE			  CODE	    010D	 156
+CHECKN_M			  CODE	    0119	 164
+CHECKN_PRE			  CODE	    004C	  51
+CHECKN_RE			  CODE	    00EC	 136
+CHEKK				  CODE	    00D3	 118
+CHEKK1				  CODE	    00D8	 122
+COMNWRT				  CODE	    0208	 316
+CONT1				  CODE	    0011	  12
+CONT_M				  CODE	    0011	  15
+CONT_PRE			  CODE	    0011	  16
+CONT_RE				  CODE	    0011	  14
+COUNT_LOOP			  CODE	    01CE	 275
+CY				  BIT	      D7
+DASH				  CODE	    0247	 362
+DATAENC				  CODE	    0222	 334
+DATAWRT				  CODE	    0215	 325
+DELAY				  CODE	    0231	 346
+DELAY1				  CODE	    0254	 372
+DELAY_LED			  CODE	    0277	 398
+DELAY_PRE			  CODE	    026A	 389
+DELAY_RE			  CODE	    0261	 382
+DOT				  CODE	    023A	 353
+DPH				  DATA	      83
+DPL				  DATA	      82
+EA				  BIT	      AF
+ES				  BIT	      AC
+ET0				  BIT	      A9
+ET1				  BIT	      AB
+EX0				  BIT	      A8
+EX1				  BIT	      AA
+EXTI0				  CODE	    0003
+EXTI1				  CODE	    0013
+F0				  BIT	      D5
+GO15				  CODE	    004F	  52
+GO2				  CODE	    017F	 220
+GO3				  CODE	    01CA	 269
+GO4				  CODE	    00EF	 137
+GO5				  CODE	    011C	 165
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 10
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+GOBACK				  CODE	    0011	  13
+GOBACK1				  CODE	    01C7	 267
+GOGO				  CODE	    017F	 221
+GO_M				  CODE	    0112	 160
+GO_PRE				  CODE	    003F	  45
+GO_RE				  CODE	    00E7	 133
+HERE				  CODE	    0235	 349
+HERE2				  CODE	    0233	 348
+HERE_LED			  CODE	    0279	 400
+HERR1				  CODE	    0256	 374
+HERR1_PRE			  CODE	    026C	 391
+HERR2				  CODE	    0258	 375
+HERR2_PRE			  CODE	    026E	 392
+HERR3				  CODE	    025A	 376
+HERR3_PRE			  CODE	    0270	 393
+HERRR2				  CODE	    0263	 384
+HERRRE				  CODE	    0265	 385
+HERR_D1				  CODE	    023C	 355
+HERR_D2				  CODE	    023E	 356
+HERR_D3				  CODE	    0240	 357
+HERR_DD1			  CODE	    0249	 364
+HERR_DD2			  CODE	    024B	 365
+HERR_DD3			  CODE	    024D	 366
+IE				  DATA	      A8
+IE0				  BIT	      89
+IE1				  BIT	      8B
+INT0				  BIT	      B2
+INT1				  BIT	      B3
+IP				  DATA	      B8
+IT0				  BIT	      88
+IT1				  BIT	      8A
+JAWAD				  CODE	    01AA	 247
+JA_M				  CODE	    0124	 170
+JA_PRE				  CODE	    005D	  58
+JA_RE				  CODE	    00F7	 142
+LED_B				  CODE	    009C	  88
+LED_LOOP			  CODE	    0066	  64
+LED_LOOP1			  CODE	    0064	  63
+LED_LOOP2			  CODE	    0062	  62
+LED_LOOPB			  CODE	    00A5	  93
+LED_LOOPB1			  CODE	    00A3	  92
+LED_LOOPB2			  CODE	    00A1	  91
+M_B				  CODE	    0146	 189
+OV				  BIT	      D2
+P				  BIT	      D0
+P0				  DATA	      80
+P1				  DATA	      90
+P2				  DATA	      A0
+P3				  DATA	      B0
+PCON				  DATA	      87
+PS				  BIT	      BC
+PSW				  DATA	      D0
+PT0				  BIT	      B9
+PT1				  BIT	      BB
+PX0				  BIT	      B8
+PX1				  BIT	      BA
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                         PAGE 11
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+RB8				  BIT	      9A
+RD				  BIT	      B7
+REN				  BIT	      9C
+REP				  CODE	    0013	  18
+REP1				  CODE	    0177	 217
+REP14				  CODE	    0047	  49
+REP2				  CODE	    017F	 223
+REP3				  CODE	    00E7	 134
+REP4				  CODE	    0114	 162
+RESET				  CODE	    0000
+RE_LOOP				  CODE	    00FA	 145
+RI				  BIT	      98
+RS0				  BIT	      D3
+RS1				  BIT	      D4
+RXD				  BIT	      B0
+SBUF				  DATA	      99
+SCON				  DATA	      98
+SINT				  CODE	    0023
+SM0				  BIT	      9F
+SM1				  BIT	      9E
+SM2				  BIT	      9D
+SP				  DATA	      81
+T0				  BIT	      B4
+T1				  BIT	      B5
+TB8				  BIT	      9B
+TCON				  DATA	      88
+TF0				  BIT	      8D
+TF1				  BIT	      8F
+TH0				  DATA	      8C
+TH1				  DATA	      8D
+TI				  BIT	      99
+TIMER0				  CODE	    000B
+TIMER1				  CODE	    001B
+TL0				  DATA	      8A
+TL1				  DATA	      8B
+TMOD				  DATA	      89
+TR0				  BIT	      8C
+TR1				  BIT	      8E
+TXD				  BIT	      B1
+WR				  BIT	      B6
